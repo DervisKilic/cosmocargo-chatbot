@@ -6,7 +6,7 @@ rätta till missförstånd och små logiska fel.
 Översikt
 
 - Syfte: Ge kunder snabba, korrekta och korta svar om deras frakter (läge, innehåll, ID, detaljer), samt vägleda i formulär och regler.
-- Källa för sanning: Databasen via backend-tjänster. LLM används alltid för att formulera svaret, men får endast strukturerad DATA från DB (ingen fri påhittad fakta).
+- Källa för sanning: Databasen via backend-tjänster. LLM används alltid för att formulera svaret, men får endast strukturerad DATA från DB.
 - Roller: Chattbotten är endast tillgänglig för kundinloggade användare. Pilot/Admin blockeras.
 
 Arkitektur (filer)
@@ -14,8 +14,7 @@ Arkitektur (filer)
 - Backend
   - backend/Endpoints/ChatbotEndpoints.cs: HTTP-endpoint för chatt (POST /api/chat). Hämtar data, bygger system‑prompt och skickar historik + ev. strukturerad DATA till Ollama.
   - backend/Utils/ChatIntentResolver.cs: Identifierar användarens avsikt (”var är…”, ”innehåller…”, ”ID?”, ”ge all info”, fältspecifika frågor m.m.).
-  - backend/Utils/ChatPromptBuilder.cs: Bygger en bas‑prompt (svenska riktlinjer, regler) och exponerar svensk status‑text via ToSvStatus. Inga fraktlistor bäddas längre in i prompten.
-  - backend/Services/ShipmentService.cs: Datakälla för frakter (med ordning CreatedAt DESC). Används av endpointen.
+  - backend/Utils/ChatPromptBuilder.cs: Bygger en bas‑prompt (svenska riktlinjer, regler) och exponerar svensk status‑text via ToSvStatus. Inga fraktlistor bäddas in i prompten.
 - Frontend
   - frontend/src/components/ui/ChatbotButton.tsx: Flytande, responsiv chatt-knapp med chattfönster (client component). Använder askChat-servicen.
   - frontend/src/services/chat-service.ts: Anropar /api/chat med meddelandehistorik.
@@ -70,7 +69,7 @@ API
 Frontend – chattknapp och fönster
 
 - Komponent: frontend/src/components/ui/ChatbotButton.tsx
-  - Flytande knapp nere till höger, responsiv panel, aria‑attribut (role="log", aria‑live="polite").
+  - Flytande knapp nere till höger.
   - Döljs på ”/” och ”/login”; döljs även för inloggade Pilot/Admin.
   - Använder askChat (service) som postar till /api/chat.
 
@@ -83,7 +82,7 @@ Konfiguration
 
 Avvikelser mot exempel/spec i root‑README
 
-- Risknivå: Exempeltexter nämner ”Risknivå 1–5…”. Denna egenskap finns inte i Shipment‑modellen. Chattbotten svarar inte med risknivå i
+- Risknivå: Exempeltexter nämner ”Risknivå 1–5…”. Denna egenskap finns inte i Shipment‑modellen. Chattbotten svarar inte med risknivå.
 
 Testexempel (förslag)
 
