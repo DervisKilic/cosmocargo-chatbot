@@ -20,10 +20,17 @@ export async function askChat(messages: ChatMessage[]): Promise<string> {
   } catch (err) {
     if (err instanceof ApiError) {
       // Try to extract a helpful message from ProblemDetails or backend payload
-      const data = err.data as any;
-      const detail = (data && (data.detail || data.title || data.message)) as string | undefined;
-      throw new Error(detail || "Ett fel uppstod vid chattanropet.");
+      const data = err.data;
+      let detail: string | undefined;
+      if (data && typeof data === "object") {
+        const obj = data as Record<string, unknown>;
+        if (typeof obj.detail === "string") detail = obj.detail;
+        else if (typeof obj.title === "string") detail = obj.title;
+        else if (typeof obj.message === "string") detail = obj.message;
+      }
+      throw new Error(detail ?? err.message ?? "Ett fel uppstod vid chattanropet.");
     }
-    throw err as Error;
+    if (err instanceof Error) throw err;
+    throw new Error("Ett fel uppstod vid chattanropet.");
   }
 }

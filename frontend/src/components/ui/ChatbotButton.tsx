@@ -73,8 +73,8 @@ export default function ChatbotButton() {
     try {
       const reply = await askChat(mapped);
       setMessages((prev) => [...prev, { id: Math.random().toString(36).slice(2), role: "bot", content: reply || "" }]);
-    } catch (e: any) {
-      const msg = typeof e?.message === "string" && e.message.trim().length > 0
+    } catch (e: unknown) {
+      const msg = e instanceof Error && typeof e.message === "string" && e.message.trim().length > 0
         ? e.message
         : "Kunde inte hämta svar just nu. Försök igen senare.";
       setMessages((prev) => [
