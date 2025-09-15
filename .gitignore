@@ -1,0 +1,15 @@
+# Dependencies
+/node_modules
+**/node_modules
+
+# Build outputs
+**/bin
+**/obj
+**/.next
+**/dist
+
+# IDE files
+.vs
+.vscode
+*.suo
+*.user

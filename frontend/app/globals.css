@@ -1,0 +1,150 @@
+@import url('https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-space-dark text-space-text-primary font-inter;
+  }
+
+  h1, h2, h3, h4, h5, h6, a, button {
+    @apply font-orbitron;
+  }
+}
+
+/* Custom classes */
+@layer components {
+  .space-card {
+    @apply bg-space-primary border border-space-secondary border-opacity-50 rounded-xl overflow-hidden;
+  }
+  
+  .space-button {
+    @apply font-orbitron text-white bg-button-gradient hover:opacity-90 transition-all duration-300 rounded-md px-6 py-2 shadow-lg;
+  }
+  
+  .glow {
+    @apply relative;
+  }
+  
+  .glow::after {
+    @apply content-[''] absolute -inset-0.5 bg-button-gradient opacity-0 blur transition duration-300 rounded-lg;
+  }
+  
+  .glow:hover::after {
+    @apply opacity-70;
+  }
+  
+  .glow:hover {
+    @apply z-10;
+  }
+  
+  .space-input {
+    @apply bg-space-primary/80 border border-space-secondary text-white rounded px-4 py-2 focus:ring-2 focus:ring-space-accent-purple/50 focus:border-space-accent-purple outline-none;
+  }
+  
+  .space-gradient-text {
+    @apply bg-clip-text text-transparent bg-button-gradient;
+  }
+  
+  /* Star basic styles - animations now handled by GSAP */
+  .star {
+    @apply absolute rounded-full bg-white;
+  }
+  
+  .shooting-star {
+    @apply absolute h-[2px] w-[2px] bg-white;
+    box-shadow: 0 0 3px 1px rgba(255, 255, 255, 0.8);
+    position: relative;
+  }
+  
+  .shooting-star-tail {
+    @apply absolute bg-white;
+    width: 50px;
+    height: 100%;
+    background: linear-gradient(90deg, white, transparent);
+  }
+
+  .logo {
+    height: 6em;
+    padding: 1.5em;
+    will-change: filter;
+    transition: filter 300ms;
+  }
+  .logo:hover {
+    filter: drop-shadow(0 0 2em #646cffaa);
+  }
+  .logo.react:hover {
+    filter: drop-shadow(0 0 2em #61dafbaa);
+  }
+  
+  @keyframes logo-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  @media (prefers-reduced-motion: no-preference) {
+    a:nth-of-type(2) .logo {
+      animation: logo-spin infinite 20s linear;
+    }
+  }
+  
+  .card {
+    padding: 2em;
+  }
+  
+  .read-the-docs {
+    color: #888;
+  }
+  
+}
