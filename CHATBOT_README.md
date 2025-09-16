@@ -1,7 +1,8 @@
 CosmoCargo – Chattbot (AI) Dokumentation
 
 Undertiden jag gjorde kodtestet har jag använt LLM för kodgenerering men oftast behövt gå in och petat i koden för att
-rätta till missförstånd och små logiska fel.
+rätta till missförstånd och små logiska fel. Just nu hanterar Ollama med model: gemma3:12 språket för chaten. runt 9Gb stort men kan ändras
+till mindre model för snabbare svar. Gemma3:12 är inte perfekt och hallucinerar ibland, för bättre svar från botten krävs krafigare model men min dator pallar inte det. :)
 
 Översikt
 
@@ -9,7 +10,7 @@ rätta till missförstånd och små logiska fel.
 - Källa för sanning: Databasen via backend-tjänster. LLM används alltid för att formulera svaret, men får endast strukturerad DATA från DB.
 - Roller: Chattbotten är endast tillgänglig för kundinloggade användare. Pilot/Admin blockeras.
 
-Arkitektur (filer)
+Arkitektur
 
 - Backend
   - backend/Endpoints/ChatbotEndpoints.cs: HTTP-endpoint för chatt (POST /api/chat). Hämtar data, bygger system‑prompt och skickar historik + ev. strukturerad DATA till Ollama.
@@ -79,10 +80,6 @@ Konfiguration
 - OLLAMA_MODEL (default: gemma3:12b)
 - OLLAMA_CTX, OLLAMA_NUM_PREDICT, OLLAMA_TEMPERATURE
 - CORS i Program.cs tillåter frontend på http://localhost:3000
-
-Avvikelser mot exempel/spec i root‑README
-
-- Risknivå: Exempeltexter nämner ”Risknivå 1–5…”. Denna egenskap finns inte i Shipment‑modellen. Chattbotten svarar inte med risknivå.
 
 Testexempel (förslag)
 
