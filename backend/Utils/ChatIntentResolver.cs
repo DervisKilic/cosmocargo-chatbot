@@ -62,7 +62,7 @@ namespace CosmoCargo.Utils
         private static readonly Regex PriorityWord = new("(prio|prioritet)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private static readonly Regex InsuranceWord = new("(f(ö|o)rs(ä|a)kring|f(ö|o)rs(ä|a)krad|f(ö|o)rs(ä|a)krat|insurance)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private static readonly Regex DescriptionWord = new("(beskrivning|description)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-        private static readonly Regex WeightWord = new("vikt", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+        private static readonly Regex WeightWord = new("(vikt|väger|tyngd|hur\\s+tung)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private static readonly Regex CategoryWord = new("(kategori|last|inneh(å|a)ll)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
         private static readonly Regex StatusWord = new("status", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
@@ -77,10 +77,8 @@ namespace CosmoCargo.Utils
                 if (lastUser != null)
                 {
                     var text = lastUser.Content ?? string.Empty;
-                    var prevUser = userMessages.Count > 1 ? userMessages[^2] : null;
-                    var prevText = prevUser?.Content ?? string.Empty;
-
                     var match = GuidRegex.Match(text);
+
                     if (match.Success && Guid.TryParse(match.Value, out var gid))
                     {
                         result.MentionedId = gid;

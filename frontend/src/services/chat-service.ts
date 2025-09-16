@@ -14,10 +14,7 @@ export interface ChatReply {
 export async function askChat(messages: ChatMessage[]): Promise<string> {
   try {
     const response = await api.post<ChatReply>("/chat", {
-      messages: messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      })),
+      messages,
     });
 
     return response.data.reply;
@@ -47,3 +44,4 @@ export async function askChat(messages: ChatMessage[]): Promise<string> {
     throw new Error("Ett fel uppstod vid chattanropet.");
   }
 }
+

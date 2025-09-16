@@ -11,6 +11,8 @@ type ChatMessage = {
   content: string;
 };
 
+const generateId = () => crypto.randomUUID();
+
 function RobotIcon({ className = "h-6 w-6" }: { className?: string }) {
   return (
     <svg
@@ -73,7 +75,7 @@ export default function ChatbotButton() {
     setMessages((prev) => [
       ...prev,
       {
-        id: Math.random().toString(36).slice(2),
+        id: generateId(),
         role: "user",
         content: text.trim(),
       },
@@ -101,7 +103,7 @@ export default function ChatbotButton() {
       setMessages((prev) => [
         ...prev,
         {
-          id: Math.random().toString(36).slice(2),
+          id: generateId(),
           role: "bot",
           content: reply || "",
         },
@@ -113,10 +115,10 @@ export default function ChatbotButton() {
         typeof e.message === "string" &&
         e.message.trim().length > 0
           ? e.message
-          : "Kunde inte hämta svar just nu. Försök igen senare.";
+      : "Kunde inte hämta svar just nu. Försök igen senare.";
       setMessages((prev) => [
         ...prev,
-        { id: Math.random().toString(36).slice(2), role: "bot", content: msg },
+        { id: generateId(), role: "bot", content: msg },
       ]);
     } finally {
       setIsLoading(false);

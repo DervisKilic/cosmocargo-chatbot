@@ -6,18 +6,21 @@ using CosmoCargo.Model;
 using CosmoCargo.Model.Queries;
 using CosmoCargo.Services;
 using CosmoCargo.Utils;
+
 namespace CosmoCargo.Endpoints
 {
     public sealed class ChatbotLogCategory { }
+
     public static class ChatbotEndpoints
     {
         // Returns the default clarification instruction and LLM data when no shipment is found.
         private static (string instruction, object data) BuildNoShipmentSelectedClarification(string? instructionOverride = null)
         {
-            var defaultInstruction = "Be anv√§ndaren specificera vilken frakt. Skriv p√• svenska.";
+            var defaultInstruction = "Be anv‰ndaren specificera vilken frakt. Skriv pÂ svenska.";
             var data = new { intent = "clarify", reason = "no-shipment-selected", allowed = new[] { "senaste", "id" } };
             return (instructionOverride ?? defaultInstruction, data);
         }
+
         public static async Task<IResult> Chat(
             ChatRequest request,
             IShipmentService shipmentService,
@@ -26,20 +29,7 @@ namespace CosmoCargo.Endpoints
             ClaimsPrincipal user,
             ILogger<ChatbotLogCategory> logger)
         {
-            // Disable chatbot for authenticated Pilot/Admin users
-            if (user.Identity?.IsAuthenticated == true)
-            {
-                var role = user?.GetRole();
-                if (string.IsNullOrWhiteSpace(role))
-                {
-                    logger.LogWarning("User without role attempted to access chatbot; returning forbidden.");
-                    return Results.StatusCode(403);
-                }
-                if (role == UserRole.Pilot.ToString() || role == UserRole.Admin.ToString())
-                {
-                    return Results.StatusCode(403);
-                }
-            }
+\ \ \ \ \ \ \ \ \ \ \ \ //\ Disable\ chatbot\ for\ authenticated\ Pilot/Admin\ users\n\ \ \ \ \ \ \ \ \ \ \ \ if\ \(user\.Identity\?\.IsAuthenticated\ ==\ true\)\n\ \ \ \ \ \ \ \ \ \ \ \ \{\n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ var\ role\ =\ user\?\.GetRole\(\);\n\n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ \(string\.IsNullOrWhiteSpace\(role\)\)\n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ logger\.LogWarning\("User\ without\ role\ attempted\ to\ access\ chatbot;\ returning\ forbidden\."\);\n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ Results\.StatusCode\(403\);\n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\n\n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ if\ \(role\ ==\ UserRole\.Pilot\.ToString\(\)\ \|\|\ role\ ==\ UserRole\.Admin\.ToString\(\)\)\n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ return\ Results\.StatusCode\(403\);\n\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ }\n\ \ \ \ \ \ \ \ \ \ \ \ }
             string systemPrompt = string.Empty;
             object? llmData = null;
             string? llmInstruction = null;
@@ -50,6 +40,7 @@ namespace CosmoCargo.Endpoints
             bool isIdQuestion = intent.IsIdQuestion;
             bool hasPronounReference = intent.HasPronounReference;
             bool wantsLatest = intent.WantsLatest;
+
             // Add shipments for authenticated users (customer/pilot/admin filtered)
             if (user.Identity?.IsAuthenticated == true)
             {
@@ -57,8 +48,10 @@ namespace CosmoCargo.Endpoints
                 {
                     var role = user.GetRole();
                     var userId = user.GetUserId();
+
                     var filter = new ShipmentsFilter { Page = 1, PageSize = 1 };
                     PaginatedResult<Shipment> shipments = await shipmentService.GetShipmentsByCustomerIdAsync(userId, filter);
+
                     // Helper to resolve a shipment by id; optionally default to latest
                     async Task<Shipment?> ResolveShipmentAsync(bool defaultToLatest)
                     {
@@ -75,26 +68,30 @@ namespace CosmoCargo.Endpoints
                         }
                         return selected;
                     }
+
                     // Answer "where is my shipment?" using DB data, and let LLM phrase it
                     if (isWhereQuestion)
                     {
                         var selected = await ResolveShipmentAsync(defaultToLatest: wantsLatest);
+
                         if (selected != null)
                         {
                             // Compute a concise location hint so LLM can state place first, then status
                             string location = selected.Status switch
                             {
                                 ShipmentStatus.InTransit => $"Under transport till {selected.Receiver.Planet}",
-                                ShipmentStatus.Approved => $"P√• {selected.Sender.Planet}, v√§ntar p√• pilot",
-                                ShipmentStatus.Assigned => $"P√• {selected.Sender.Planet}, v√§ntar p√• avg√•ng",
-                                ShipmentStatus.WaitingForApproval => $"P√• {selected.Sender.Planet}, v√§ntar p√• godk√§nnande",
+                                ShipmentStatus.Approved => $"PÂ {selected.Sender.Planet}, v‰ntar pÂ pilot",
+                                ShipmentStatus.Assigned => $"PÂ {selected.Sender.Planet}, v‰ntar pÂ avgÂng",
+                                ShipmentStatus.WaitingForApproval => $"PÂ {selected.Sender.Planet}, v‰ntar pÂ godk‰nnande",
                                 ShipmentStatus.Delivered => $"Levererad till {selected.Receiver.Planet}",
-                                ShipmentStatus.Cancelled => $"P√• {selected.Sender.Planet}",
-                                ShipmentStatus.Denied => $"P√• {selected.Sender.Planet}",
-                                _ => $"Ok√§nd plats"
+                                ShipmentStatus.Cancelled => $"PÂ {selected.Sender.Planet}",
+                                ShipmentStatus.Denied => $"PÂ {selected.Sender.Planet}",
+                                _ => $"Ok‰nd plats"
                             };
+
                             var statusSv = ChatPromptBuilder.ToSvStatus(selected.Status);
-                            llmInstruction = "Svara kort p√• svenska. B√∂rja med var frakten √§r enligt DATA.location, och n√§mn sedan status enligt DATA.statusSv, om statusen √§r under transport s√§g att den √§r p√• v√§g annars √§r det kvar eller om den √§r leverarad s√• har den anl√§nt till destinationen. Station. Anv√§nd emojis om du vill. Endast utifr√•n DATA.";
+
+                            llmInstruction = "Svara kort pÂ svenska. Bˆrja med var frakten ‰r enligt DATA.location, och n‰mn sedan status enligt DATA.statusSv, om statusen ‰r under transport s‰g att den ‰r pÂ v‰g annars ‰r det kvar eller om den ‰r leverarad sÂ har den anl‰nt till destinationen. Station. Anv‰nd emojis om du vill. Endast utifrÂn DATA.";
                             llmData = new
                             {
                                 intent = "where",
@@ -113,18 +110,19 @@ namespace CosmoCargo.Endpoints
                             llmData = clarify.data;
                         }
                     }
+
                     // If user asks about contents, answer directly from DB
                     if (isContentQuestion)
                     {
                         var selected = await ResolveShipmentAsync(defaultToLatest: wantsLatest);
                         if (selected != null)
                         {
-                            llmInstruction = "Svara p√• svenska utifr√•n DATA (inneh√•ll och vikt).";
+                            llmInstruction = "Svara pÂ svenska utifrÂn DATA (innehÂll och vikt).";
                             llmData = new { intent = "contents", category = selected.Category, weightKg = selected.Weight };
                         }
                         else
                         {
-                            var clarify = BuildNoShipmentSelectedClarification("Be anv√§ndaren specificera vilken frakt: be dem skriva 'senaste' eller ange ett ID. Skriv p√• svenska, v√§nligt och kort.");
+                            var clarify = BuildNoShipmentSelectedClarification("Be anv‰ndaren specificera vilken frakt: be dem skriva 'senaste' eller ange ett ID. Skriv pÂ svenska, v‰nligt och kort.");
                             llmInstruction = clarify.instruction;
                             llmData = clarify.data;
                         }
@@ -135,7 +133,7 @@ namespace CosmoCargo.Endpoints
                         var selected = await ResolveShipmentAsync(defaultToLatest: wantsLatest);
                         if (selected != null)
                         {
-                            llmInstruction = "Ge en sammanst√§llning p√• svenska av DATA (id, status, ursprung/destination, avs√§ndare/mottagare, inneh√•ll, vikt, prioritet, f√∂rs√§kring, beskrivning). Inga p√•hittade f√§lt.";
+                            llmInstruction = "Ge en sammanst‰llning pÂ svenska av DATA (id, status, ursprung/destination, avs‰ndare/mottagare, innehÂll, vikt, prioritet, fˆrs‰kring, beskrivning). Inga pÂhittade f‰lt.";
                             llmData = new
                             {
                                 intent = "all-info",
@@ -157,13 +155,14 @@ namespace CosmoCargo.Endpoints
                             llmData = clarify.data;
                         }
                     }
+
                     // If user asks for specific fields, answer via LLM with grounded DATA
                     if (intent.RequestedFields.Any())
                     {
                         var selected = await ResolveShipmentAsync(defaultToLatest: wantsLatest);
                         if (selected != null)
                         {
-                            llmInstruction = "Svara det som efterfr√•gas p√• svenska, utifr√•n DATA.";
+                            llmInstruction = "Svara det som efterfrÂgas pÂ svenska, utifrÂn DATA.";
                             llmData = new
                             {
                                 intent = "fields",
@@ -180,18 +179,19 @@ namespace CosmoCargo.Endpoints
                         }
                         else
                         {
-                            var clarify = BuildNoShipmentSelectedClarification("Be anv√§ndaren specificera vilken frakt: genom att ange ett ID. Skriv p√• svenska.");
+                            var clarify = BuildNoShipmentSelectedClarification("Be anv‰ndaren specificera vilken frakt: genom att ange ett ID. Skriv pÂ svenska.");
                             llmInstruction = clarify.instruction;
                             llmData = clarify.data;
                         }
                     }
+
                     // If user asks about the ID of a shipment (LLM phrases from DATA)
                     if (isIdQuestion)
                     {
                         var selected = await ResolveShipmentAsync(defaultToLatest: wantsLatest);
                         if (selected != null)
                         {
-                            llmInstruction = "Svara med fraktens ID p√• svenska utifr√•n DATA.";
+                            llmInstruction = "Svara med fraktens ID pÂ svenska utifrÂn DATA.";
                             llmData = new { intent = "id", id = selected.Id };
                         }
                         else
@@ -201,27 +201,24 @@ namespace CosmoCargo.Endpoints
                             llmData = clarify.data;
                         }
                     }
-                    // Guide the user toward picking "senaste" or an ID when shipment context is missing
-                    if (llmData == null && !mentionedId.HasValue && !wantsLatest)
+
+                    // Fuide the user name the ID or "newest"
+                    if (!mentionedId.HasValue && !wantsLatest)
                     {
-                        bool needsShipmentSelection = isWhereQuestion || isContentQuestion || isIdQuestion
-                            || intent.IsAllInfoRequest || intent.RequestedFields.Any()
-                            || intent.WantsList || intent.HasShipmentCue || hasPronounReference;
-                        if (needsShipmentSelection)
-                        {
-                            llmInstruction = "F√∂rklara kort att du kan visa 'senaste' frakten eller en specifik via ID. Svara p√• svenska och v√§nligt.";
-                            llmData = new { intent = "clarify", reason = "ordinal-not-supported", allowed = new[] { "senaste", "id" } };
-                        }
+                        llmInstruction = "Fˆrklara kort att du kan visa 'senaste' frakten eller en specifik via ID. Svara pÂ svenska och v‰nligt.";
+                        llmData = new { intent = "clarify", reason = "ordinal-not-supported", allowed = new[] { "senaste", "id" } };
                     }
+
                     // If a shipment is referenced but no specific intent was asked, ask for clarification instead of calling LLM
                     if ((mentionedId.HasValue || wantsLatest)
                         && !isWhereQuestion && !isContentQuestion && !isIdQuestion
                         && !intent.IsAllInfoRequest && !intent.RequestedFields.Any())
                     {
                         var which = wantsLatest ? "den senaste frakten" : (mentionedId.HasValue ? $"frakten med ID {mentionedId.Value}" : "frakten");
-                        llmInstruction = $"Fr√•ga vad anv√§ndaren vill veta om {which} (t.ex. ID, status eller inneh√•ll). Svara p√• svenska och v√§nligt.";
+                        llmInstruction = $"FrÂga vad anv‰ndaren vill veta om {which} (t.ex. ID, status eller innehÂll). Svara pÂ svenska och v‰nligt.";
                         llmData = new { intent = "clarify", reason = "no-specific-intent" };
                     }
+
                     // Build base system prompt
                     systemPrompt = ChatPromptBuilder.BuildSystemPrompt();
                 }
@@ -236,7 +233,7 @@ namespace CosmoCargo.Endpoints
                 if (isWhereQuestion || isContentQuestion || isIdQuestion || intent.IsAllInfoRequest || intent.RequestedFields.Any() || wantsLatest || mentionedId.HasValue)
                 {
                     systemPrompt = ChatPromptBuilder.BuildSystemPrompt();
-                    llmInstruction = "Informera anv√§ndaren kort och v√§nligt p√• svenska att de m√•ste logga in f√∂r att se fraktuppgifter. Tipsa om att ange ett ID efter inloggning eller skriva 'senaste'.";
+                    llmInstruction = "Informera anv‰ndaren kort och v‰nligt pÂ svenska att de mÂste logga in fˆr att se fraktuppgifter. Tipsa om att ange ett ID efter inloggning eller skriva 'senaste'.";
                     llmData = new { intent = "not-authenticated", allowed = new[] { "senaste", "id" } };
                 }
                 else
@@ -245,29 +242,34 @@ namespace CosmoCargo.Endpoints
                     systemPrompt = ChatPromptBuilder.BuildSystemPrompt();
                 }
             }
+
             // Compose messages for Ollama chat endpoint (non-streaming)
             var ollamaMessages = new List<object>
             {
                 new { role = "system", content = systemPrompt }
             };
+
             foreach (var m in request.Messages ?? new List<ChatMessagePayload>())
             {
                 var role = m.Role == "bot" || m.Role == "assistant" ? "assistant" : "user";
                 ollamaMessages.Add(new { role, content = m.Content });
             }
-            // Om vi har strukturerad data, l√§gg till en extra instruktion + DATA till modellen
+
+            // Om vi har strukturerad data, l‰gg till en extra instruktion + DATA till modellen
             if (llmData != null)
             {
                 var jsonData = JsonSerializer.Serialize(llmData);
-                var instruction = llmInstruction ?? "Formulera ett svar p√• svenska utifr√•n DATA.";
+                var instruction = llmInstruction ?? "Formulera ett svar pÂ svenska utifrÂn DATA.";
                 var content = $"{instruction}\nDATA:\n```json\n{jsonData}\n```";
                 ollamaMessages.Add(new { role = "user", content });
             }
+
             // Configure safe defaults to reduce memory use
             var modelName = config["OLLAMA_MODEL"] ?? "gemma3:12b";
             int numCtx = 1024; if (int.TryParse(config["OLLAMA_CTX"], out var ctx)) numCtx = ctx;
             int numPredict = 256; if (int.TryParse(config["OLLAMA_NUM_PREDICT"], out var np)) numPredict = np;
             double temperature = 0.2; if (double.TryParse(config["OLLAMA_TEMPERATURE"], NumberStyles.Float, CultureInfo.InvariantCulture, out var t)) temperature = t;
+
             var body = new
             {
                 model = modelName,
@@ -275,6 +277,7 @@ namespace CosmoCargo.Endpoints
                 stream = false,
                 options = new { num_ctx = numCtx, num_predict = numPredict, temperature = temperature }
             };
+
             var client = httpClientFactory.CreateClient();
             client.Timeout = TimeSpan.FromSeconds(120);
             var ollamaUrl = config["OLLAMA_URL"] ?? "http://ollama:11434";
@@ -282,6 +285,7 @@ namespace CosmoCargo.Endpoints
             {
                 Content = new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json")
             };
+
             try
             {
                 var resp = await client.SendAsync(req);
@@ -291,6 +295,7 @@ namespace CosmoCargo.Endpoints
                     logger.LogWarning("Ollama returned non-success status {Status}: {Body}", (int)resp.StatusCode, json);
                     return Results.Problem(title: "Ollama fel", detail: json, statusCode: (int)resp.StatusCode);
                 }
+
                 using var doc = JsonDocument.Parse(json);
                 string reply = string.Empty;
                 if (doc.RootElement.TryGetProperty("message", out var messageEl) &&
@@ -302,6 +307,7 @@ namespace CosmoCargo.Endpoints
                 {
                     reply = respEl.GetString() ?? string.Empty;
                 }
+
                 return Results.Ok(new ChatResponse { Reply = reply });
             }
             catch (Exception ex)
@@ -311,17 +317,21 @@ namespace CosmoCargo.Endpoints
             }
         }
     }
+
     public class ChatRequest
     {
         public List<ChatMessagePayload>? Messages { get; set; }
     }
+
     public class ChatMessagePayload
     {
         public string Role { get; set; } = "user"; // user | assistant | bot
         public string Content { get; set; } = string.Empty;
     }
+
     public class ChatResponse
     {
         public string Reply { get; set; } = string.Empty;
     }
 }
+
